@@ -1,0 +1,11 @@
+#!/bin/bash
+for n in *; do
+	if [ -d "$n" ]; then
+		chmod $1 "$n"
+		cd "$n"
+		chfix
+		cd ..
+	else
+		chmod $2 "$n"
+	fi
+done

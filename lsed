@@ -1,0 +1,7 @@
+#!/usr/bin/env lua
+-- "sed" that uses Lua patterns
+
+s = io.stdin:read("*a")
+s = loadstring("return "..arg[1])()
+
+io.stdout:write(s)

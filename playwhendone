@@ -1,0 +1,11 @@
+#!/bin/bash
+n="`basename $n .part`"
+while [ 1 ]; do
+	if [ -e "$n" ]; then
+		break
+	fi
+	sleep 1
+done
+notify-send "playing $n"
+sleep 1
+mplayer "$n"

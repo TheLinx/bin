@@ -1,0 +1,2 @@
+#!/bin/bash
+catbin $@ | xclip -selection c

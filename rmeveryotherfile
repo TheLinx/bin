@@ -1,0 +1,16 @@
+#!/usr/bin/env lua
+-- does what it says on the tin
+require"lfs"
+
+t = {}
+for n in lfs.dir"." do
+	if n:sub(1,1) ~= "." then
+		t[#t+1] = n
+	end
+end
+table.sort(t)
+for n=1,#t do
+	if n%2 == 1 then
+		os.remove(t[n])
+	end
+end

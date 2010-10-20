@@ -1,0 +1,42 @@
+#!/usr/bin/env lua
+-- recursively encode any ffmpeg-supported audio tracks to 64kbps vorbis
+local lfs = require("lfs")
+local exec = os.execute
+local pop = io.popen
+local conc = table.concat
+
+local function is_directory(fullname)
+	return lfs.attributes(fullname, "mode") == "directory"
+end
+local function fileinfo_to_oggzstuff(str)
+	o = {}
+	while true do
+		local npos = str:find("\n")
+		if not npos then break end
+		o[#o+1] = ("-t %q "):format(str:sub(1,npos-1):gsub("[^%w]+(%w+)[^:]+: (.+)", "%1=%2"))
+		str = str:sub(npos+1)
+	end
+	return conc(o)
+end
+
+local function recurse(path, target)
+	if not lfs.attributes(target..path:sub(2)) then
+		lfs.mkdir(target..path:sub(2))
+	end
+	for name in lfs.dir(path) do
+		if not (name == "." or name == "..") then
+		local fullname = path.."/"..name
+		if is_directory(fullname) then
+			if name:lower() ~= "scans" then
+				recurse(fullname, target)
+			end
+		else
+			local outname = target..fullname:sub(2):match("(.+/[^.]+)")..".ogg"
+			exec(("ffmpeg -i %q -acodec libvorbis -ab 64k %q"):format(fullname, outname))
+			local fileinfo = pop(("ffprobe %q 2>&1"):format(fullname)):read("*a"):match("Metadata:\n(.+)Duration:")
+			exec(("vorbiscomment -a %q %s"):format(outname, fileinfo_to_oggzstuff(fileinfo)))
+		end
+	end end
+end
+
+recurse(unpack(arg))

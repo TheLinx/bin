@@ -1,0 +1,40 @@
+#!/usr/bin/env lua
+-- for FLAC files named according to the [nixx] quality naming convention.
+-- requires LuaFileSystem.
+require"lfs"
+-- for speed, load these functions into memory
+-- no table lookups!
+local tableInsert,ioPopen = table.insert,io.popen
+
+local o = {}
+for n in lfs.dir(lfs.currentdir()) do
+	if not (n == "." or n == "..") then
+	local x,y
+	if tonumber(n:sub(4, 5)) and n:sub(6,6) == "-" then
+		x = tonumber(n:sub(1, 2))
+		y = tonumber(n:sub(4, 5))
+		DEPTH = true
+	else
+		x = tonumber(n:sub(1, 2))
+	end
+	local name = ioPopen('metaflac "'..n..'" --show-tag=TITLE --no-utf8-convert'):read("*all")
+	if y then
+		if not o[x] then o[x] = {} end
+		o[x][y] = y..". "..name:sub(7)
+	else
+		o[x] = x..". "..name:sub(7)
+	end
+end end
+
+-- we use tables because repetitive concatenation in Lua is inefficient
+-- http://www.lua.org/pil/11.6.html
+-- the correct solution is to add strings to a table and then do a table concatenation:
+if DEPTH then
+	for k,v in ipairs(o) do
+		print("CD "..k)
+		print(table.concat(o[k]):sub(0,-2))
+	end
+else
+	print(table.concat(o):sub(0,-2))
+end
+-- hooray for speed!

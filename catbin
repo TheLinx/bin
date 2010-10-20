@@ -1,0 +1,6 @@
+#!/bin/bash
+file=`which $1`
+if [ -z $file ]; then
+	file=$HOME/.bin/$1
+fi
+cat $file

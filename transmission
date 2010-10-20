@@ -1,0 +1,9 @@
+#!/bin/bash
+# wait for mounted media to become available before starting transmission
+while [ 1 ]; do
+	if [ -d /media/Ayumu/Downloads ]; then
+		break
+	fi
+	sleep 1
+done
+nice transmission &

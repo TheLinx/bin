@@ -1,0 +1,53 @@
+#!/usr/bin/env lua
+local md5 = require("md5")
+local tonumber = tonumber
+local ioOpen,ioRead = io.open,io.read
+local osExecute = os.execute
+local tableConcat,tableInsert = table.concat,table.insert
+
+if not arg[1] or not arg[2] or not arg[3] then
+	print("Usage: "..arg[0].." EncodeString OutResolution OutFilename")
+	print("Requires lua-md5 (luarocks install md5).")
+	print("Also, you need convert in your path (ImageMagick)")
+	os.exit(1)
+end
+
+str = arg[1]
+md5sum = md5.sumhexa(str)
+
+out = {}
+tableInsert(out, [[
+/* XPM */
+static char * md5_xpm[] = {
+"5 5 5 1",
+]])
+
+for n=1,25,6 do
+	if not colourcode then
+		colourcode = "a"
+	elseif colourcode == "a" then
+		colourcode = "b"
+	elseif colourcode == "b" then
+		colourcode = "c"
+	elseif colourcode == "c" then
+		colourcode = "d"
+	elseif colourcode == "d" then
+		colourcode = "e"
+	end
+	local colour = md5sum:sub(n,n+5)
+	tableInsert(out, "\""..colourcode.." c #"..colour.."\",\n")
+end
+
+tableInsert(out, [[
+"abcde",
+"abcde",
+"abcde",
+"abcde",
+"abcde"
+}]])
+
+fhand = ioOpen("/tmp/md5img.xpm", "w")
+fhand:write(tableConcat(out))
+fhand:close()
+
+osExecute("convert /tmp/md5img.xpm -interpolate integer -resize "..arg[2].." "..arg[3])

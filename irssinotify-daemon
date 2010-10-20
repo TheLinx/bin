@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# made by bartbes
+
+PORT = 6158
+
+import socket
+import dbus
+
+def notify(s):
+	s = s.strip()
+	end = s.find(">")
+	sender = s[1:end]
+	text = s[end+2:]
+	notifications.Notify("irssinotify", 0, "", sender, text, [], {"category": "im.received", "x-canonical-append": "allowed"}, -1)
+
+bus = dbus.SessionBus()
+notifications_proxy = bus.get_object("org.freedesktop.Notifications", "/org/freedesktop/Notifications")
+notifications = dbus.Interface(notifications_proxy, "org.freedesktop.Notifications")
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(("", PORT))
+s.listen(5)
+while 1:
+	conn, addr = s.accept()
+	while 1:
+		data = conn.recv(4096)
+		if not data:
+			break
+		if data[:2] == ">>":
+			notify(data[2:])
+	conn.close()
+

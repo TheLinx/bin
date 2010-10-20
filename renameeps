@@ -1,0 +1,14 @@
+#!/usr/bin/env lua
+-- renames all files in a folder to "Episode *num*.*previous file extension*"
+require"lfs"
+
+local d = {}
+for n in lfs.dir"." do
+	if n:sub(1,1) ~= "." then
+		d[#d+1] = n
+	end
+end
+table.sort(d)
+for num,name in pairs(d) do
+	os.execute(("mv %q %q"):format(name, ("Episode %02d%s"):format(num, name:sub(-4))))
+end

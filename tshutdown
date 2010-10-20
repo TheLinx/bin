@@ -1,0 +1,7 @@
+#!/bin/bash
+# wait for transmission to exit before shutting down
+wmctrl -c Transmission
+while [ ! -z "`pgrep transmission`" ]; do
+	sleep 0.2
+done
+sudo shutdown -h now

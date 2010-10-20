@@ -1,0 +1,24 @@
+#!/usr/bin/env lua
+require("cue")
+
+if not (arg[1] and arg[2]) then
+  print("usage: cuetoflacs in.cue out-dir")
+  os.exit()
+end
+
+dir = arg[1]:match("(.+/).+") or "./"
+
+if arg[3] then
+  run = print
+else
+  run = os.execute
+end
+
+local fhand = assert(io.open(arg[1], "r"))
+local sheet = cue.decode(fhand)
+s = ("ffmpeg -i %s%s"):format(dir, sheet.filename)
+for k, v in pairs(sheet.tracks) do
+  local sstart, send = v.indices[1], sheet.tracks[k+1] and sheet.tracks[k+1].indices[1]
+  print(("converting track #%02d - %s"):format(k, v.title))
+  run(("%s -ss %s%s '%s%02d-%s.flac' > /dev/null 2>&1"):format(s, sstart, (send and " -t "..(send - sstart) or ""), arg[2], k, v.title))
+end
